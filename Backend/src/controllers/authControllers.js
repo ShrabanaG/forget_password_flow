@@ -32,7 +32,7 @@ export const forgotPassword = async (req, res) => {
     await sendResetEmail(email, resetToken);
     res.status(200).json({ message: "Password reset link sent to your email" });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
