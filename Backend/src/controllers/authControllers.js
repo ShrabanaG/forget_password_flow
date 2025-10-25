@@ -1,41 +1,38 @@
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+import { sendResetEmail } from "../uthils/sendResetEmail.js";
 import User from "../models/user.js";
 
-export const forgetPassword = async (req, res) => {
+export const registerUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    let user = await User.findOne({ email });
+    if (user) return res.status(400).json({ message: "User already exists" });
+
+    user = new User({ email, password });
+    await user.save();
+
+    res.status(201).json({ message: "User registered successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const token = crypto.randomBytes(32).toString("hex");
-    user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
-
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins
     await user.save();
-    const resetUrl = `http://localhost:5173/reset-password/${token}`;
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      to: user.email,
-      subject: "Password Reset",
-      html: `<p>You requested a password reset.</p>
-             <p><a href="${resetUrl}">Click here to reset your password</a></p>`,
-    });
-
-    res.status(200).json({ message: "Password reset link sent to email" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    await sendResetEmail(email, resetToken);
+    res.status(200).json({ message: "Password reset link sent to your email" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 };
 
