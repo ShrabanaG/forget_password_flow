@@ -13,4 +13,4 @@ connectToDb();
 
 app.use("/api/auth", authRoutes);
 
-app.listen(process.env.PORT, () => console.log("Server running on port 5000"));
+export default app;
