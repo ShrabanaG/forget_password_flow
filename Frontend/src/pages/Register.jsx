@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+const base_url = import.meta.env.VITE_BASE_URL;
+
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -9,7 +11,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/auth/create-user", {
+      const res = await fetch(`${base_url}/api/auth/create-user`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+const base_url = import.meta.env.VITE_BASE_URL;
+
 const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -15,14 +17,11 @@ const ResetPassword = () => {
       return;
     }
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/auth/reset-password/${token}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password }),
-        }
-      );
+      const res = await fetch(`${base_url}/api/auth/reset-password/${token}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
       const data = await res.json();
       if (res.ok) navigate("/success");
       else setMessage(data.message);
